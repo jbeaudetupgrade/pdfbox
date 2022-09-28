@@ -45,12 +45,12 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface
 public class CreateSignedTimeStamp implements SignatureInterface
 {
     private static final Log LOG = LogFactory.getLog(CreateSignedTimeStamp.class);
-    
+
     private final String tsaUrl;
 
     /**
      * Initialize the signed timestamp creator
-     * 
+     *
      * @param tsaUrl The url where TS-Request will be done.
      */
     public CreateSignedTimeStamp(String tsaUrl)
@@ -60,7 +60,7 @@ public class CreateSignedTimeStamp implements SignatureInterface
 
     /**
      * Signs the given PDF file. Alters the original file on disk.
-     * 
+     *
      * @param file the PDF file to sign
      * @throws IOException if the file could not be read or written
      */
@@ -71,7 +71,7 @@ public class CreateSignedTimeStamp implements SignatureInterface
 
     /**
      * Signs the given PDF file.
-     * 
+     *
      * @param inFile input PDF file
      * @param outFile output PDF file
      * @throws IOException if the input file could not be read
@@ -93,7 +93,7 @@ public class CreateSignedTimeStamp implements SignatureInterface
 
     /**
      * Prepares the TimeStamp-Signature and starts the saving-process.
-     * 
+     *
      * @param document given Pdf
      * @param output Where the file will be written
      * @throws IOException
@@ -128,17 +128,8 @@ public class CreateSignedTimeStamp implements SignatureInterface
     @Override
     public byte[] sign(InputStream content) throws IOException
     {
-        ValidationTimeStamp validation;
-        try
-        {
-            validation = new ValidationTimeStamp(tsaUrl);
-            return validation.getTimeStampToken(content);
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            LOG.error("Hashing-Algorithm not found for TimeStamping", e);
-        }
-        return new byte[] {};
+        ValidationTimeStamp validation = new ValidationTimeStamp(tsaUrl);
+        return validation.getTimeStampToken(content);
     }
 
     public static void main(String[] args) throws IOException

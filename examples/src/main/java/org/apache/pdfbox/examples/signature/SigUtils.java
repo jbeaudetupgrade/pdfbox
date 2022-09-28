@@ -66,7 +66,7 @@ import org.bouncycastle.util.Store;
 
 /**
  * Utility class for the signature / timestamp examples.
- * 
+ *
  * @author Tilman Hausherr
  */
 public class SigUtils
@@ -189,8 +189,8 @@ public class SigUtils
      * Log if the certificate is not valid for signature usage. Doing this
      * anyway results in Adobe Reader failing to validate the PDF.
      *
-     * @param x509Certificate 
-     * @throws java.security.cert.CertificateParsingException 
+     * @param x509Certificate
+     * @throws java.security.cert.CertificateParsingException
      */
     public static void checkCertificateUsage(X509Certificate x509Certificate)
             throws CertificateParsingException
@@ -224,8 +224,8 @@ public class SigUtils
     /**
      * Log if the certificate is not valid for timestamping.
      *
-     * @param x509Certificate 
-     * @throws java.security.cert.CertificateParsingException 
+     * @param x509Certificate
+     * @throws java.security.cert.CertificateParsingException
      */
     public static void checkTimeStampCertificateUsage(X509Certificate x509Certificate)
             throws CertificateParsingException
@@ -242,8 +242,8 @@ public class SigUtils
     /**
      * Log if the certificate is not valid for responding.
      *
-     * @param x509Certificate 
-     * @throws java.security.cert.CertificateParsingException 
+     * @param x509Certificate
+     * @throws java.security.cert.CertificateParsingException
      */
     public static void checkResponderCertificateUsage(X509Certificate x509Certificate)
             throws CertificateParsingException
@@ -259,7 +259,7 @@ public class SigUtils
 
     /**
      * Gets the last relevant signature in the document, i.e. the one with the highest offset.
-     * 
+     *
      * @param document to get its last signature
      * @return last signature or null when none found
      */
@@ -268,7 +268,7 @@ public class SigUtils
         Comparator<PDSignature> comparatorByOffset =
                 Comparator.comparing(sig -> sig.getByteRange()[1]);
 
-        // we can't use getLastSignatureDictionary() because this will fail (see PDFBOX-3978) 
+        // we can't use getLastSignatureDictionary() because this will fail (see PDFBOX-3978)
         // if a signature is assigned to a pre-defined empty signature field that isn't the last.
         // we get the last in time by looking at the offset in the PDF file.
         Optional<PDSignature> optLastSignature =
@@ -315,7 +315,7 @@ public class SigUtils
         Collection<X509CertificateHolder> tstMatches =
                 timeStampToken.getCertificates().getMatches(timeStampToken.getSID());
         X509CertificateHolder certificateHolder = tstMatches.iterator().next();
-        SignerInformationVerifier siv = 
+        SignerInformationVerifier siv =
                 new JcaSimpleSignerInfoVerifierBuilder().setProvider(SecurityProvider.getProvider()).build(certificateHolder);
         timeStampToken.validate(siv);
     }
@@ -356,18 +356,17 @@ public class SigUtils
 
     /**
      * Get certificate of a TSA.
-     * 
+     *
      * @param tsaUrl URL
      * @return the X.509 certificate.
      *
      * @throws GeneralSecurityException
-     * @throws IOException 
+     * @throws IOException
      */
     public static X509Certificate getTsaCertificate(String tsaUrl)
             throws GeneralSecurityException, IOException
     {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        TSAClient tsaClient = new TSAClient(new URL(tsaUrl), null, null, digest);
+        TSAClient tsaClient = new TSAClient(new URL(tsaUrl), null, null, "SHA-256");
         InputStream emptyStream = new ByteArrayInputStream(new byte[0]);
         TimeStampToken timeStampToken = tsaClient.getTimeStampToken(emptyStream);
         return getCertificateFromTimeStampToken(timeStampToken);
@@ -377,7 +376,7 @@ public class SigUtils
      * Extract X.509 certificate from a timestamp
      * @param timeStampToken
      * @return the X.509 certificate.
-     * @throws CertificateException 
+     * @throws CertificateException
      */
     public static X509Certificate getCertificateFromTimeStampToken(TimeStampToken timeStampToken)
             throws CertificateException
@@ -419,7 +418,7 @@ public class SigUtils
      *
      * @param urlString
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static InputStream openURL(String urlString) throws IOException
     {

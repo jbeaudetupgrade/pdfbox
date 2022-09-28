@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,21 +53,19 @@ public class ValidationTimeStamp
 
     /**
      * @param tsaUrl The url where TS-Request will be done.
-     * @throws NoSuchAlgorithmException
      * @throws MalformedURLException
      */
-    public ValidationTimeStamp(String tsaUrl) throws NoSuchAlgorithmException, MalformedURLException
+    public ValidationTimeStamp(String tsaUrl) throws MalformedURLException
     {
         if (tsaUrl != null)
         {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            this.tsaClient = new TSAClient(new URL(tsaUrl), null, null, digest);
+            this.tsaClient = new TSAClient(new URL(tsaUrl), null, null, "SHA-256");
         }
     }
 
     /**
      * Creates a signed timestamp token by the given input stream.
-     * 
+     *
      * @param content InputStream of the content to sign
      * @return the byte[] of the timestamp token
      * @throws IOException
@@ -98,7 +95,7 @@ public class ValidationTimeStamp
             newSigners.add(signTimeStamp(signer));
         }
 
-        // Because new SignerInformation is created, new SignerInfoStore has to be created 
+        // Because new SignerInformation is created, new SignerInfoStore has to be created
         // and also be replaced in signedData. Which creates a new signedData object.
         return CMSSignedData.replaceSigners(signedData, new SignerInformationStore(newSigners));
     }
@@ -132,7 +129,7 @@ public class ValidationTimeStamp
         Attributes signedAttributes = new Attributes(vector);
 
         // There is no other way changing the unsigned attributes of the signer information.
-        // result is never null, new SignerInformation always returned, 
+        // result is never null, new SignerInformation always returned,
         // see source code of replaceUnsignedAttributes
         return SignerInformation.replaceUnsignedAttributes(signer, new AttributeTable(signedAttributes));
     }

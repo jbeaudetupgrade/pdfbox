@@ -25,6 +25,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Random;
@@ -56,7 +57,7 @@ public class TSAClient
     private final URL url;
     private final String username;
     private final String password;
-    private final MessageDigest digest;
+    private final String digestAlgorithm;
 
     // SecureRandom.getInstanceStrong() would be better, but sometimes blocks on Linux
     private static final Random RANDOM = new SecureRandom();
@@ -68,12 +69,14 @@ public class TSAClient
      * @param password password of TSA
      * @param digest the message digest to use
      */
-    public TSAClient(URL url, String username, String password, MessageDigest digest)
+    public TSAClient(URL url, String username, String password, String digestAlgorithm)
     {
         this.url = url;
         this.username = username;
         this.password = password;
-        this.digest = digest;
+        this.digestAlgorithm = digestAlgorithm;
+
+        getMessageDigest();
     }
 
     /**
@@ -85,13 +88,13 @@ public class TSAClient
      */
     public TimeStampToken getTimeStampToken(InputStream content) throws IOException
     {
-        digest.reset();
-        DigestInputStream dis = new DigestInputStream(content, digest);
+        MessageDigest messageDigest = getMessageDigest();
+        DigestInputStream dis = new DigestInputStream(content, messageDigest);
         while (dis.read() != -1)
         {
             // do nothing
         }
-        byte[] hash = digest.digest();
+        byte[] hash = messageDigest.digest();
 
         // 32-bit cryptographic nonce
         int nonce = RANDOM.nextInt();
@@ -99,7 +102,7 @@ public class TSAClient
         // generate TSA request
         TimeStampRequestGenerator tsaGenerator = new TimeStampRequestGenerator();
         tsaGenerator.setCertReq(true);
-        ASN1ObjectIdentifier oid = ALGORITHM_OID_FINDER.find(digest.getAlgorithm()).getAlgorithm();
+        ASN1ObjectIdentifier oid = ALGORITHM_OID_FINDER.find(messageDigest.getAlgorithm()).getAlgorithm();
         TimeStampRequest request = tsaGenerator.generate(oid, hash, BigInteger.valueOf(nonce));
 
         // get TSA response
@@ -149,7 +152,7 @@ public class TSAClient
             {
                 contentEncoding = StandardCharsets.UTF_8.name();
             }
-            connection.setRequestProperty("Authorization", 
+            connection.setRequestProperty("Authorization",
                     "Basic " + new String(Base64.getEncoder().encode((username + ":" + password).
                             getBytes(contentEncoding))));
         }
@@ -181,5 +184,15 @@ public class TSAClient
         LOG.debug("Received response from TSA server");
 
         return response;
+    }
+
+
+    private MessageDigest getMessageDigest()
+    {
+        try {
+            return MessageDigest.getInstance(digestAlgorithm);
+        } catch (NoSuchAlgorithmException | NullPointerException e) {
+            throw new IllegalArgumentException("The TSA digest algorithm is invalid!", e);
+        }
     }
 }
